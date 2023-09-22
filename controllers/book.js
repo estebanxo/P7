@@ -18,17 +18,29 @@ exports.creatBook = (req, res, next) => {
 };
 
 exports.creatRateBook = (req, res, next) => {
-    Book.findOne({ _id: req.params.id })
     const rateObject = req.body;
     delete rateObject._id;
     delete rateObject._userId;
-    const rateBook = new RateBook({
+
+    const item = {
         userId: req.auth.userId,
-        rating: rateObject.rating
-    });
-    
-    rateBook.save()
-    .then(() => res.status(201).json({ message: 'Note enregistré !'}))
+        grade: req.body.rating,
+        _id: req.params.id
+    }
+
+    Book.findOne({ _id: req.params.id })
+    .then(book => {
+        book.ratings.filter(user => {
+            if (user.userId === req.auth.userId) {
+                res.status(401).json({ message: 'Non-autorisé !' });
+            } else {
+                console.log(Book);
+                Book.updateOne({ ratings: book.ratings }, {$set: item} )
+                .then(() => res.status(200).json({ message: 'Objet modifié !'}))
+                .catch(error => res.status(401).json({ error }));
+            }
+        })
+    })
     .catch(error => res.status(400).json({ error }));
 };
 
