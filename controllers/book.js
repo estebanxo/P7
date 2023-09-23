@@ -1,5 +1,4 @@
 const Book = require('../models/Book');
-const RateBook = require('../models/RateBook');
 const fs = require('fs');
 
 exports.creatBook = (req, res, next) => {
@@ -19,7 +18,6 @@ exports.creatBook = (req, res, next) => {
 
 exports.creatRateBook = (req, res, next) => {
     const bookObject = req.body;
-    
     delete bookObject._userId;
 
     const item = {
@@ -30,14 +28,12 @@ exports.creatRateBook = (req, res, next) => {
 
     Book.findOne({ _id: req.params.id })
     .then(book => {
-        const rateObject = book.ratings;
-        console.log(rateObject);
         book.ratings.filter(user => {
             if (user.userId === req.auth.userId) {
                 res.status(401).json({ message: 'Non-autorisé !' });
             } else {
-                console.log(book.ratings);
-                Book.updateOne({ _id: req.params.id }, { rateObject, $set: { ratings: item }, _id: req.params.id })
+                console.log(user);
+                Book.updateOne({ _id: req.params.id }, { user, $set: { ratings: item }, _id: req.params.id })
                 .then(() => res.status(200).json({ message: 'Objet modifié !'}))
                 .catch(error => res.status(401).json({ error }));
             }
