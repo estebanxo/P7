@@ -18,9 +18,9 @@ exports.creatBook = (req, res, next) => {
 };
 
 exports.creatRateBook = (req, res, next) => {
-    const rateObject = req.body;
-    delete rateObject._id;
-    delete rateObject._userId;
+    const bookObject = req.body;
+    
+    delete bookObject._userId;
 
     const item = {
         userId: req.auth.userId,
@@ -30,12 +30,14 @@ exports.creatRateBook = (req, res, next) => {
 
     Book.findOne({ _id: req.params.id })
     .then(book => {
+        const rateObject = book.ratings;
+        console.log(rateObject);
         book.ratings.filter(user => {
             if (user.userId === req.auth.userId) {
                 res.status(401).json({ message: 'Non-autorisé !' });
             } else {
-                console.log(Book);
-                Book.updateOne({ ratings: book.ratings }, {$set: item} )
+                console.log(book.ratings);
+                Book.updateOne({ _id: req.params.id }, { rateObject, $set: { ratings: item }, _id: req.params.id })
                 .then(() => res.status(200).json({ message: 'Objet modifié !'}))
                 .catch(error => res.status(401).json({ error }));
             }
@@ -71,6 +73,7 @@ exports.deleteBook = (req, res, next) => {
             res.status(401).json({ message: 'Non-autorisé !'});
         } else {
             const filename = book.imageUrl.split('/images/')[1];
+            console.log(filename + " = filename");
             fs.unlink(`images/${filename}`, () => {
                 Book.deleteOne({ _id: req.params.id })
                 .then(() => res.status(200).json({ message: 'Objet supprimé !'}))
