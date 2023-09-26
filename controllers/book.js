@@ -108,7 +108,7 @@ exports.getAllBook = (req, res, next) => {
 const sort = [{$sort : {"averageRating" : -1}}];
 
 exports.getBestrating = (req, res, next) => {
-    Book.find([{ $sort: {"averageRating" : -1} }, { $limit : 3 }])
+    Book.find().sort({ averageRating: -1 }).limit(3)
     // .then(book => {
     //     let averagesRatings = book.filter(x => x.averageRating);
 
