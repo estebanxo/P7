@@ -109,24 +109,6 @@ const sort = [{$sort : {"averageRating" : -1}}];
 
 exports.getBestrating = (req, res, next) => {
     Book.find().sort({ averageRating: -1 }).limit(3)
-    // .then(book => {
-    //     let averagesRatings = book.filter(x => x.averageRating);
-
-    //     let highestGrades = [];
-    //     for (let i = 0; i < 3; i++) {
-    //         highestGrades.push(Math.max(...averagesRatings));
-    //     }
-    //     console.log(highestGrades);
-         
-    //     let booksWithHighestGrades = [];
-    //     booksWithHighestGrades = book.filter(obj => {
-    //         for (let i = 0; i < 3; i++) {
-    //             obj.averageRating === highestGrades[i];
-    //         }
-    //     })
-    //     console.log(booksWithHighestGrades);
-    //     return booksWithHighestGrades;
-    // })
     .then(books => res.status(200).json(books))
     .catch(error => res.status(400).json({ error }));
 };
