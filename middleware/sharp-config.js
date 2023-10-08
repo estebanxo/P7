@@ -1,25 +1,27 @@
 const sharp = require('sharp');
-const fs = require('fs');
+const fs = require('fs').promises;
 
-module.exports = (req, file, callback) => {
-    fs.access("../images", (error) => {
-        if (error) {
-          fs.mkdirSync("../images");
+module.exports = async (req, res, next) => {
+
+    if (req.file) {
+
+        try {
+            const imagePath = `images/${req.file.filename}`;
+    
+            await sharp(imagePath)
+                .webp( {quality: 20} )
+                .resize(405)
+                .toFile(`images/opt${req.file.filename}`)
+        
+            await fs.unlink(imagePath, (error) => {
+                if (error) return res.status(400).json({ error });
+            });
+        
+            next();
+
+        } catch(error) {
+            return res.status(500).json({ error });
         }
-    });
 
-    const name = file.originalname;
-    const ref = `${name}-${Date.now()}.webp`;
-
-    console.log(name);
-    console.log(ref);
-
-    sharp(`${name}`).webp( {quality: 20} ).resize(405).toFile('../images', ref)
-    .then(function(info) {
-        console.log(info)
-        callback(null, ref);
-    })
-    .catch(function(err) {
-        console.log(err)
-    })
+    } else next();
 }
