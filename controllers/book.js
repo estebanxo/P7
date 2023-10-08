@@ -35,19 +35,15 @@ exports.creatRateBook = (req, res, next) => {
         })
         const allRate = book.ratings.map(x => x.grade);
         allRate.push(gradeObject);
-        console.log(allRate);
         const nbrRate = allRate.length;
-        console.log(nbrRate);
 
         //  adition des elements du tableau
         let sum = 0;
         for (let i = 0; i < nbrRate; i++) {
             sum += allRate[i];
         }
-        console.log(sum);
 
         let average = sum / nbrRate;
-        console.log(average);
 
         Book.updateOne({ _id: req.params.id }, { $push: { ratings: item }, $set: { averageRating: average } })
         .then(() => res.status(200).json({ message: 'Objet modifié !'}))
@@ -59,7 +55,7 @@ exports.creatRateBook = (req, res, next) => {
 exports.modifyBook = (req, res, next) => {
     const bookObject = req.file ? {
         ...JSON.parse(req.body.book),
-        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+        imageUrl: `${req.protocol}://${req.get('host')}/images/opt${req.file.filename}`
     } : { ...req.body };
 
     delete bookObject._userId;
@@ -83,7 +79,7 @@ exports.deleteBook = (req, res, next) => {
             res.status(401).json({ message: 'Non-autorisé !'});
         } else {
             const filename = book.imageUrl.split('/images/')[1];
-            console.log(filename + " = filename");
+            console.log(`${filename}`);
             fs.unlinkSync(`images/${filename}`);
             Book.deleteOne({ _id: req.params.id })
             .then(() => res.status(200).json({ message: 'Objet supprimé !'}))
@@ -104,8 +100,6 @@ exports.getAllBook = (req, res, next) => {
     .then(books => res.status(200).json(books))
     .catch(error => res.status(400).json({ error }));
 };
-
-const sort = [{$sort : {"averageRating" : -1}}];
 
 exports.getBestrating = (req, res, next) => {
     Book.find().sort({ averageRating: -1 }).limit(3)
