@@ -3,19 +3,30 @@ const fs = require('fs');
 
 exports.creatBook = (req, res) => {
     const bookObject = JSON.parse(req.body.book);
-    const book = new Book({
-      ...bookObject,
-      userId: req.auth.userId,
-      imageUrl: `${req.protocol}://${req.get('host')}/images/opt${req.file.filename}`
-    });
-    
-    book.save()
-    .then(() => res.status(201).json({ message: 'Objet enregistré !'}))
-    .catch(error => res.status(400).json({ error }));
+    const rating = bookObject.ratings[0];
+    const gradeObject = rating.grade;
+    console.log(rating);
+    console.log(gradeObject);
+    if (gradeObject < 0) {
+        res.status(401).json({ message: 'La note doit être comprise entre 0 et 5 !' });
+    } else if (gradeObject > 5) {
+        res.status(401).json({ message: 'La note doit être comprise entre 0 et 5 !' });
+    } else {
+        const book = new Book({
+        ...bookObject,
+        userId: req.auth.userId,
+        imageUrl: `${req.protocol}://${req.get('host')}/images/opt${req.file.filename}`
+        });
+        
+        book.save()
+        .then(() => res.status(201).json({ message: 'Objet enregistré !'}))
+        .catch(error => res.status(400).json({ error }));
+    }
 };
 
 exports.creatRateBook = (req, res) => {
     const gradeObject = req.body.rating;
+    console.log(gradeObject);
     if (gradeObject === 0) {
         Book.findOne({ _id: req.params.id })
         .then(book => res.status(200).json(book))
